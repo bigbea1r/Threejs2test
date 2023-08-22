@@ -13,9 +13,7 @@ const sketch = ({ context }) => {
     context
   });
 
-
   renderer.setClearColor('#333', 1);
-
 
   const camera = new THREE.PerspectiveCamera(12,window.innerWidth / window.innerHeight,.01,100);
 
@@ -52,6 +50,48 @@ const sketch = ({ context }) => {
 
   scene.add(meshHide);
   scene.add(lightHolder);
+
+  scene.add(mesh);
+
+  function addMapInf(posCil1, posCil2, main=false){
+    let mainSize=mSC=null,color=0x008dfb;
+    if(main){
+      mainSize=[.004, .004, .3, 12];
+      mSC = [.017, 24];
+      color = 0x86c3f9
+      }else{
+        mainSize=[.002, .002, .16, 12]
+        mSC=[.01, 12]
+      };
+      const cyl = new THREE.CylinderBufferGeometry(mainSize[0], mainSize[1], mainSize[2], mainSize[3],);
+      const cylinder = new THREE.Mesh(cyl,new THREE.MeshBasicMaterial({color}));
+      cylinder.position.set(posCil[1], posCil1[1], posCil1[2]);
+
+      parent.add(cylinder);
+
+      if(posCil2==''){return[cylinder]}
+
+      const circLocation = new THREE.CircleBufferGeometry(mSC[0],mSC[1]);
+      const circleLocation = new THREE.Mesh(circLocation,
+        new THREE.MeshBasicMaterial({color, side: THREE.DoubleSide}));
+        circleLocation.position.set(posCir2[0],posCir2[1],posCir2[2]);
+        circleLocation.lookAt(new THREE.Vector3());
+        parent.add(circleLocation);
+        return [cylinder,circleLocation]
+  }
+
+  const c1=addMapInf([.66,.95,-.28],[.662,.8,-.28],true)
+  anime({
+    targets:c1[0].scale,// указываем цель анимации — «scale» — увеличение чего-то
+    x:[0,1],// увеличивает с 0 до 1 по оси X
+    y:[0,1],// увеличивает с 0 до 1 по оси Y
+    z:[0,1],// увеличивает с 0 до 1 по оси Z
+    duration:2000,// время выполнения самой анимации
+    delay:1100,// задержка перед выполнением анимации
+    easing:'easeOutBounce' // тип перехода анимации — лучше всего выбирать «linear»
+  });
+  
+  anime({targets:c1[1].scale,x:[0,1],y:[0,1],z:[0,1],duration:2000,easing:'linear'});
 
   return {
     resize ({ pixelRatio, viewportWidth, viewportHeight }) {
