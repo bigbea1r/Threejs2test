@@ -25,7 +25,7 @@ const sketch = ({ context }) => {
   renderer.setClearColor('#333', 1);
 
   const camera = new THREE.PerspectiveCamera(12,window.innerWidth / window.innerHeight,.01,100);
-  camera.position.set(13.5,4,-3.5);
+  camera.position.set(10.5,4,-3.5);
   camera.setViewOffset(10, 10, -2, .5, 9, 9)
 
   const controls = new THREE.OrbitControls(camera, context.canvas);
@@ -119,7 +119,7 @@ const sketch = ({ context }) => {
         const textGeo = new THREE.TextGeometry(text,{
           font,
           size,
-          height: .01,
+          height: .015,
           curveSegments: 12,
           /* bevelEnabled: true,
           bevelThickness: 10,
@@ -139,15 +139,15 @@ const sketch = ({ context }) => {
         parent.add(text);
         return text;
     }
-      const txt1=createText('Center of the Earth',[.648,1.0499,-.3],[0,1.75,0],.05,font) //[приближение/отдаление объекта, высота, влево сдвигается объект приувелечении]
-      const txt2=createText('Saint-Petersburg',[.648,.95,-.3],[0,1.75,0],.05,font,0x6f98fc);
+      const txt1=createText('Center of the Earth',[-.64,1.0499,-.3],[0,1.75,0],.05,font) //[приближение/отдаление объекта, высота, влево сдвигается объект приувелечении]
+      const txt2=createText('Saint-Petersburg',[-.64,.95,-.3],[0,1.75,0],.05,font,0x6f98fc);
 
       const mainPos=[.662,.8,-.28];
       anime.timeline().add({
           targets:txt1.scale,x:[0,1],y:[0,1],z:[0,1],duration:600,easing:'linear'
       }).add({
-          targets:txt2.scale,x:[0,1],y:[0,1],z:[0,1],duration:6,delay:1000,easing:'linear',complete:()=>{
-              //(main)
+          targets:txt2.scale,x:[0,1],y:[0,1],z:[0,1],duration:600,delay:1000,easing:'linear',complete:()=>{
+              //(main) колбэк для очерёдности запуска анимации текста и фигур
               let c1=addMapInf([.66,.95,-.28],mainPos,true);
               anime({targets:c1[0].scale,x:[0,1],y:[0,1],z:[0,1],duration:1000,delay:100,easing:'linear'});
               anime({targets:c1[1].scale,x:[0,1],y:[0,1],z:[0,1],duration:1000,easing:'linear'});
@@ -156,7 +156,33 @@ const sketch = ({ context }) => {
   });
   //\TEXT+
   /* \ !!!WARN!!! Planet 2-3 */
+  const loader = new THREE.TextureLoader();
 
+  // load a resource
+  loader.load(
+      'png/logo.png',
+      function ( texture ) {
+          const material = new THREE.MeshBasicMaterial( {
+              map: texture,
+              side: THREE.DoubleSide,
+              alphaTest:.4
+          });
+          const meshTexture = new THREE.Mesh(
+              new THREE.PlaneGeometry(1,.235),//[ширина фотографии, высота фотографии]
+              material
+          );
+          meshTexture.position.set(.62,1.065,-.41); //[приближение/отдаление объекта, высота, влево сдвигается объект приувелечении]
+          meshTexture.rotation.set(0,1.95,0); //наклоны 
+          meshTexture.scale.set(0,0,0);
+          scene.add(meshTexture)
+          parent.add(meshTexture)
+          anime({targets:meshTexture.scale,x:[0,.2],y:[0,.2],z:[0,1],duration:600,easing:'linear'})
+      },
+      undefined,
+      function ( e ) {
+          console.error( e );
+      }
+  );
     // draw each frame
 return {
   // Handle resize events here
