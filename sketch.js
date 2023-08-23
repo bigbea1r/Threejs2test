@@ -4,6 +4,13 @@ global.THREE = require('three');
 const anime=require('animejs')
 require('three/examples/js/controls/OrbitControls');
 
+// Подключаем управление объектами на сцене
+require('three/examples/js/controls/OrbitControls');
+
+/* УРОК 2-3 / Добавим загрузчик шрифтов */
+require('three/examples/js/loaders/FontLoader');
+require('three/examples/js/geometries/TextGeometry');
+
 const settings = {
   animate: true,
   context: 'webgl',
@@ -18,7 +25,7 @@ const sketch = ({ context }) => {
   renderer.setClearColor('#333', 1);
 
   const camera = new THREE.PerspectiveCamera(12,window.innerWidth / window.innerHeight,.01,100);
-  camera.position.set(10.5,4,-3.5);
+  camera.position.set(13.5,4,-3.5);
   camera.setViewOffset(10, 10, -2, .5, 9, 9)
 
   const controls = new THREE.OrbitControls(camera, context.canvas);
@@ -41,9 +48,9 @@ const sketch = ({ context }) => {
   });
 
   const mesh = new THREE.Mesh(geometry,materialIcosahedron);
-  const parent=mesh;
+  const parent = mesh;
   const geomHide = new THREE.SphereBufferGeometry(1.0499, 64, 36);
-  const matHide=new THREE.MeshStandardMaterial({color:new THREE.Color(0x091e5a)});
+  const matHide = new THREE.MeshStandardMaterial({color:new THREE.Color(0x091e5a)});
   const meshHide= new THREE.Mesh(geomHide, matHide);
 
   scene.add(meshHide);
@@ -92,36 +99,86 @@ const sketch = ({ context }) => {
       return [cylinder,circleLocation]
     }
 
-    const c1=addMapInf([.66,.95,-.28],[.662,.8,-.28],true)
-
-    anime({
-      targets:c1[0].scale,// указываем цель анимации — «scale» — увеличение чего-то
-      x:[0,1],// увеличивает с 0 до 1 по оси X
-      y:[0,1],// увеличивает с 0 до 1 по оси Y
-      z:[0,1],// увеличивает с 0 до 1 по оси Z
-      duration:2000,// время выполнения самой анимации
-      delay:1100,// задержка перед выполнением анимации
-      easing:'easeOutBounce' // тип перехода анимации — лучше всего выбирать «linear»
-    });
-
-    anime({targets:c1[1].scale,x:[0,1],y:[0,1],z:[0,1],duration:2000,easing:'linear'});
-
-
-  return {
-    resize ({ pixelRatio, viewportWidth, viewportHeight }) {
-      renderer.setPixelRatio(pixelRatio);
-      renderer.setSize(viewportWidth, viewportHeight);
-      camera.aspect = viewportWidth / viewportHeight;
-      camera.updateProjectionMatrix();
-    },
-    render ({ time, deltaTime }) {
-      lightHolder.quaternion.copy(camera.quaternion);
-      renderer.render(scene, camera);
-    },
-    unload () {
-      renderer.dispose();
+  //  const c1=addMapInf([.66,.95,-.28],[.662,.8,-.28],true)
+  //
+  //  anime({
+  //    targets:c1[0].scale,// указываем цель анимации — «scale» — увеличение чего-то
+  //    x:[0,1],// увеличивает с 0 до 1 по оси X
+  //    y:[0,1],// увеличивает с 0 до 1 по оси Y
+  //    z:[0,1],// увеличивает с 0 до 1 по оси Z
+  //    duration:2000,// время выполнения самой анимации
+  //    delay:1100,// задержка перед выполнением анимации
+  //    easing:'easeOutBounce' // тип перехода анимации — лучше всего выбирать «linear»
+  //  });
+  //
+  //  anime({targets:c1[1].scale,x:[0,1],y:[0,1],z:[0,1],duration:2000,easing:'linear'});
+  const fontLoader=new THREE.FontLoader();
+  fontLoader.load('fonts/font-roboto.json', font =>{
+      function createText(text,pos,rot,size,font,color=0xffffff){
+        text=new String(text);
+        const textGeo = new THREE.TextGeometry(text,{
+          font,
+          size,
+          height: .01,
+          curveSegments: 12,
+          /* bevelEnabled: true,
+          bevelThickness: 10,
+          bevelSize: 8,
+          bevelOffset: 0,
+          bevelSegments: 5 */
+        } );
+        const textMaterial=new THREE.MeshBasicMaterial({
+            color,
+            side:THREE.FrontSide
+        });
+        text=new THREE.Mesh(textGeo,textMaterial);
+        text.position.set(pos[0],pos[1],pos[2]);
+        text.rotation.set(rot[0],rot[1],rot[2]);
+        /* text.updateMatrix(); */
+        scene.add(text);
+        parent.add(text);
+        return text;
     }
-  };
+      const txt1=createText('Center of the Earth',[.648,1.0499,-.3],[0,1.75,0],.05,font) //[приближение/отдаление объекта, высота, влево сдвигается объект приувелечении]
+      const txt2=createText('Saint-Petersburg',[.648,.95,-.3],[0,1.75,0],.05,font,0x6f98fc);
+
+      const mainPos=[.662,.8,-.28];
+      anime.timeline().add({
+          targets:txt1.scale,x:[0,1],y:[0,1],z:[0,1],duration:600,easing:'linear'
+      }).add({
+          targets:txt2.scale,x:[0,1],y:[0,1],z:[0,1],duration:6,delay:1000,easing:'linear',complete:()=>{
+              //(main)
+              let c1=addMapInf([.66,.95,-.28],mainPos,true);
+              anime({targets:c1[0].scale,x:[0,1],y:[0,1],z:[0,1],duration:1000,delay:100,easing:'linear'});
+              anime({targets:c1[1].scale,x:[0,1],y:[0,1],z:[0,1],duration:1000,easing:'linear'});
+          }
+        })
+  });
+  //\TEXT+
+  /* \ !!!WARN!!! Planet 2-3 */
+
+    // draw each frame
+return {
+  // Handle resize events here
+  resize ({ pixelRatio, viewportWidth, viewportHeight }) {
+    renderer.setPixelRatio(pixelRatio);
+    renderer.setSize(viewportWidth, viewportHeight);
+    camera.aspect = viewportWidth / viewportHeight;
+    camera.updateProjectionMatrix();
+  },
+  // And render events here
+  render ({ time, deltaTime }) {
+    //mesh.rotation.y = time * (10 * Math.PI / 180);
+    // Включаем копирование кватерниона камеры для группы Светов! чтобы Света не вращались вместе с другими объектами, когда мы их вращаем мышью / пальцами
+    lightHolder.quaternion.copy(camera.quaternion);
+    //controls.update();
+    renderer.render(scene, camera);
+  },
+  // Dispose of WebGL context (optional)
+  unload () {
+    renderer.dispose();
+  }
+};
 };
 
 canvasSketch(sketch, settings);
